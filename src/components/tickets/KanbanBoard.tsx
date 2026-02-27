@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Circle, Loader2, Eye, CheckCircle2, AlertOctagon, FileText, Bug, Zap, Layers, Clock, Sparkles } from 'lucide-react';
+import { Circle, Loader2, Eye, CheckCircle2, AlertOctagon, FileText, Bug, Zap, Layers, Clock, Sparkles, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { JiraTicket } from '@/data/mockData';
 import { TicketPriorityBadge } from './TicketPriorityBadge';
 import { getTicketUrl } from '@/services/tickets';
 import { TicketAIPanel } from './TicketAIPanel';
+import { TicketFollowUpPanel } from './TicketFollowUpPanel';
 
 const columns: { key: JiraTicket['status']; icon: React.ElementType; color: string; borderColor: string }[] = [
   { key: 'To Do', icon: Circle, color: 'text-muted-foreground', borderColor: 'border-t-muted-foreground/30' },
@@ -35,6 +36,7 @@ function formatDate(dateStr: string) {
 const KanbanCard = ({ ticket }: { ticket: JiraTicket }) => {
   const Icon = typeIcon[ticket.type];
   const [aiOpen, setAiOpen] = useState(false);
+  const [followUpOpen, setFollowUpOpen] = useState(false);
 
   return (
     <>
@@ -83,6 +85,14 @@ const KanbanCard = ({ ticket }: { ticket: JiraTicket }) => {
               <Clock className="w-2.5 h-2.5" />
               {formatDate(ticket.updatedAt)}
             </span>
+            {/* Follow Up button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setFollowUpOpen(true); }}
+              className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 transition-all opacity-0 group-hover:opacity-100"
+              title="Follow Up"
+            >
+              <Bell className="w-3 h-3" />
+            </button>
             {/* AI button */}
             <button
               onClick={(e) => { e.stopPropagation(); setAiOpen(true); }}
@@ -107,6 +117,7 @@ const KanbanCard = ({ ticket }: { ticket: JiraTicket }) => {
       </motion.div>
 
       <TicketAIPanel ticket={ticket} open={aiOpen} onClose={() => setAiOpen(false)} />
+      <TicketFollowUpPanel ticket={ticket} open={followUpOpen} onClose={() => setFollowUpOpen(false)} />
     </>
   );
 };
