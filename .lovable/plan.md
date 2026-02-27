@@ -1,82 +1,33 @@
 
+## Plan: AI Tools for Tickets + Repo Explorer Page
 
-## Add Service Layer for All Remaining Pages
+### What's being built
 
-All chart components and the Tickets/PullRequests pages already use a clean service layer. The remaining pages and components still import mock data directly. This plan adds service files and React Query hooks so every data access goes through a swappable service function.
+**1. AI Tools Panel on each ticket** — a "sparkle" button on TicketCard (and KanbanCard) that opens a slide-up sheet with AI-powered actions:
+- **Understand this ticket** — AI summary of what the ticket involves, acceptance criteria, technical scope
+- **Suggest assignee** — matches ticket keywords/type against team member expertise + capacity
+- **Find related PRs** — lists PRs from mock data whose title/repo overlaps with the ticket project
+- **Estimate complexity** — AI-generated story point estimate with reasoning
 
-### New Service Files to Create
+**2. New page: `/tickets/repo-explorer`** — "Who worked on this?" feature:
+- Repo selector dropdown (from existing `repositories` mock)
+- Shows team members who have commits/PRs in that repo (from mock `pullRequests` + `teamMembers`)
+- Per-member: contribution count, last active, recent PR titles, expertise tags
+- "Find expert for issue" input — user types a component/feature name and it matches against member expertise + PR titles
 
-**1. `src/services/dashboard.ts`**
-- `fetchDashboardStats()` -- returns dashboard stat cards data (active tickets, open PRs, team capacity, commits)
-- `fetchRecentActivity()` -- returns recent activity feed
-- `fetchTicketsByStatus()` -- returns ticket counts grouped by status
-- `fetchTicketsByPriority()` -- returns ticket counts grouped by priority
-- `fetchTeamWorkload()` -- returns team members with workload percentages
-- `fetchRepositorySummaries()` -- returns repo list with language and open PR count
+### Files to create
+- `src/components/tickets/TicketAIPanel.tsx` — sheet with 4 AI action cards + results
+- `src/pages/RepoExplorer.tsx` — repo explorer page
+- `src/services/ticketAI.ts` — mock AI response functions (ready for Gemini backend swap)
 
-**2. `src/services/team.ts`**
-- `fetchTeamMembers(filters?)` -- returns team members with optional search/expertise filters
-- `fetchTeamStats()` -- returns aggregate team stats (total members, avg velocity, active tasks, coverage)
-- `addTeamMember(member)` -- placeholder for creating a member (currently just returns success)
+### Files to edit
+- `src/components/tickets/TicketCard.tsx` — add AI sparkle button, stop propagation on the `<a>` tag, open panel
+- `src/components/tickets/KanbanBoard.tsx` — same AI button on KanbanCard
+- `src/App.tsx` — add `/tickets/repo-explorer` route
+- `src/components/layout/Sidebar.tsx` — add "Repo Explorer" sub-nav link under Tickets or as a standalone nav item
 
-**3. `src/services/chat.ts`**
-- `fetchConversations()` -- returns conversation list
-- `sendMessage(conversationId, message)` -- sends a user message
-- `generateAIResponse(conversationId, query)` -- returns AI response
-- `createConversation()` -- creates new conversation
-- `deleteConversation(id)` -- deletes a conversation
-
-**4. `src/services/integrations.ts`**
-- `fetchIntegrationStatuses()` -- returns GitHub/Jira/Slack connection status
-- `connectIntegration(type)` -- placeholder for connecting
-- `disconnectIntegration(type)` -- placeholder for disconnecting
-- `syncIntegration(type)` -- placeholder for triggering sync
-
-**5. `src/services/settings.ts`**
-- `fetchUserProfile()` -- returns current user profile
-- `updateUserProfile(data)` -- placeholder for saving profile changes
-- `updateNotificationPreferences(prefs)` -- placeholder
-- `exportUserData()` -- placeholder
-- `deleteAccount()` -- placeholder
-
-**6. `src/services/tickets.ts` (extend existing)**
-- `createTicket(data)` -- placeholder for ticket creation (used by CreateTicketModal)
-
-### New React Query Hooks
-
-**`src/hooks/useDashboardData.ts`**
-- `useDashboardStats()`, `useRecentActivity()`, `useTeamWorkload()`, `useRepositorySummaries()`
-
-**`src/hooks/useTeamData.ts`**
-- `useTeamMembers(filters?)`, `useTeamStats()`
-
-**`src/hooks/useChatData.ts`**
-- `useConversations()`, plus mutation hooks for send/create/delete
-
-**`src/hooks/useIntegrations.ts`**
-- `useIntegrationStatuses()`
-
-**`src/hooks/useUserProfile.ts`**
-- `useUserProfile()`
-
-### Page Updates
-
-Each page will be updated to import from the new hooks instead of directly from `mockData.ts`:
-
-- **Dashboard.tsx**: Use `useDashboardStats()`, `useRecentActivity()`, etc. instead of direct mock imports
-- **Sidebar.tsx**: Use `useDashboardStats()` and `useUserProfile()` hooks
-- **Team.tsx**: Use `useTeamMembers()` and `useTeamStats()`
-- **ChatAssistant.tsx**: Use `useConversations()` and mutation hooks
-- **Integrations.tsx**: Use `useIntegrationStatuses()`
-- **Settings.tsx**: Use `useUserProfile()` and `useIntegrationStatuses()`
-- **CreateTicketModal.tsx**: Use `useTeamMembers()` for assignee list, call `createTicket()` on submit
-- **AddMemberModal.tsx**: Call `addTeamMember()` on submit
-
-### Summary of Scope
-
-- 5 new service files + 1 extension
-- 5 new hook files
-- 8 component/page updates
-- All mock data stays in `mockData.ts` but is only accessed through service functions
-- Every service function has a TODO comment indicating what API call to replace it with
-
+### Key UX decisions
+- TicketCard is currently an `<a>` tag — convert to `<div>` with a separate external link icon click to avoid conflicts with the AI button
+- AI panel uses Framer Motion sheet sliding up from bottom on mobile, from right on desktop
+- Mock AI responses simulate streaming with a typing indicator (setTimeout chunks), ready for real Gemini streaming
+- Repo Explorer uses existing mock `repositories`, `pullRequests`, `teamMembers` data — no new mock data needed
