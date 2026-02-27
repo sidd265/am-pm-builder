@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { FileText, Bug, Zap, Layers, ExternalLink, Clock, Sparkles } from 'lucide-react';
+import { FileText, Bug, Zap, Layers, ExternalLink, Clock, Sparkles, Bell } from 'lucide-react';
 import type { JiraTicket } from '@/data/mockData';
 import { TicketStatusBadge } from './TicketStatusBadge';
 import { TicketPriorityBadge } from './TicketPriorityBadge';
 import { getTicketUrl } from '@/services/tickets';
 import { TicketAIPanel } from './TicketAIPanel';
+import { TicketFollowUpPanel } from './TicketFollowUpPanel';
 
 const typeIcon: Record<JiraTicket['type'], React.ElementType> = {
   Story: FileText,
@@ -42,6 +43,7 @@ function formatDate(dateStr: string) {
 export const TicketCard = ({ ticket }: { ticket: JiraTicket }) => {
   const Icon = typeIcon[ticket.type];
   const [aiOpen, setAiOpen] = useState(false);
+  const [followUpOpen, setFollowUpOpen] = useState(false);
 
   return (
     <>
@@ -81,6 +83,14 @@ export const TicketCard = ({ ticket }: { ticket: JiraTicket }) => {
           {/* Right: AI button + assignee + external */}
           <div className="flex flex-col items-end gap-2 flex-shrink-0">
             <div className="flex items-center gap-1.5">
+              {/* Follow Up button */}
+              <button
+                onClick={() => setFollowUpOpen(true)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 transition-all opacity-0 group-hover:opacity-100"
+                title="Follow Up"
+              >
+                <Bell className="w-3.5 h-3.5" />
+              </button>
               {/* AI Tools button */}
               <button
                 onClick={() => setAiOpen(true)}
@@ -117,6 +127,7 @@ export const TicketCard = ({ ticket }: { ticket: JiraTicket }) => {
       </div>
 
       <TicketAIPanel ticket={ticket} open={aiOpen} onClose={() => setAiOpen(false)} />
+      <TicketFollowUpPanel ticket={ticket} open={followUpOpen} onClose={() => setFollowUpOpen(false)} />
     </>
   );
 };
