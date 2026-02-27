@@ -1,8 +1,10 @@
-import { FileText, Bug, Zap, Layers, ExternalLink, Clock } from 'lucide-react';
+import { useState } from 'react';
+import { FileText, Bug, Zap, Layers, ExternalLink, Clock, Sparkles } from 'lucide-react';
 import type { JiraTicket } from '@/data/mockData';
 import { TicketStatusBadge } from './TicketStatusBadge';
 import { TicketPriorityBadge } from './TicketPriorityBadge';
 import { getTicketUrl } from '@/services/tickets';
+import { TicketAIPanel } from './TicketAIPanel';
 
 const typeIcon: Record<JiraTicket['type'], React.ElementType> = {
   Story: FileText,
@@ -39,60 +41,82 @@ function formatDate(dateStr: string) {
 
 export const TicketCard = ({ ticket }: { ticket: JiraTicket }) => {
   const Icon = typeIcon[ticket.type];
+  const [aiOpen, setAiOpen] = useState(false);
 
   return (
-    <a
-      href={getTicketUrl(ticket)}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`block airbnb-card-static p-5 hover:border-primary/20 transition-all group border-l-[3px] ${priorityBorder[ticket.priority]}`}
-    >
-      <div className="flex items-start justify-between gap-4">
-        {/* Left: content */}
-        <div className="flex items-start gap-3.5 flex-1 min-w-0">
-          <div className={`mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${typeColor[ticket.type]}`}>
-            <Icon className="w-4 h-4" />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
-              {ticket.title}
-            </h3>
-            <div className="flex items-center gap-2 mt-1.5">
-              <span className="font-mono text-[11px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                {ticket.key}
-              </span>
-              <span className="text-[11px] font-medium text-muted-foreground">{typeLabel[ticket.type]}</span>
+    <>
+      <div
+        className={`airbnb-card-static p-5 hover:border-primary/20 transition-all group border-l-[3px] ${priorityBorder[ticket.priority]}`}
+      >
+        <div className="flex items-start justify-between gap-4">
+          {/* Left: content */}
+          <div className="flex items-start gap-3.5 flex-1 min-w-0">
+            <div className={`mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${typeColor[ticket.type]}`}>
+              <Icon className="w-4 h-4" />
             </div>
 
-            {/* Meta row */}
-            <div className="flex items-center gap-3 mt-3 flex-wrap">
-              <TicketStatusBadge status={ticket.status} />
-              <TicketPriorityBadge priority={ticket.priority} />
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Clock className="w-3 h-3" />
-                {formatDate(ticket.updatedAt)}
-              </span>
-            </div>
-          </div>
-        </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-semibold text-foreground leading-snug">
+                {ticket.title}
+              </h3>
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className="font-mono text-[11px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                  {ticket.key}
+                </span>
+                <span className="text-[11px] font-medium text-muted-foreground">{typeLabel[ticket.type]}</span>
+              </div>
 
-        {/* Right: assignee + external icon */}
-        <div className="flex flex-col items-end gap-2 flex-shrink-0">
-          <ExternalLink className="w-4 h-4 text-muted-foreground/30 opacity-0 group-hover:opacity-100 transition-opacity" />
-          {ticket.assignee && (
-            <div className="flex items-center gap-1.5 mt-auto">
-              <span className="text-[11px] text-muted-foreground hidden sm:inline">{ticket.assignee.name}</span>
-              <div
-                className="w-6 h-6 rounded-full text-[8px] text-white flex items-center justify-center font-medium"
-                style={{ backgroundColor: ticket.assignee.avatarColor }}
-              >
-                {ticket.assignee.initials}
+              {/* Meta row */}
+              <div className="flex items-center gap-3 mt-3 flex-wrap">
+                <TicketStatusBadge status={ticket.status} />
+                <TicketPriorityBadge priority={ticket.priority} />
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  {formatDate(ticket.updatedAt)}
+                </span>
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Right: AI button + assignee + external */}
+          <div className="flex flex-col items-end gap-2 flex-shrink-0">
+            <div className="flex items-center gap-1.5">
+              {/* AI Tools button */}
+              <button
+                onClick={() => setAiOpen(true)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover:opacity-100"
+                title="AI Tools"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+              </button>
+              {/* Open in Jira */}
+              <a
+                href={getTicketUrl(ticket)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all opacity-0 group-hover:opacity-100"
+                title="Open in Jira"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+            {ticket.assignee && (
+              <div className="flex items-center gap-1.5 mt-auto">
+                <span className="text-[11px] text-muted-foreground hidden sm:inline">{ticket.assignee.name}</span>
+                <div
+                  className="w-6 h-6 rounded-full text-[8px] text-white flex items-center justify-center font-medium"
+                  style={{ backgroundColor: ticket.assignee.avatarColor }}
+                >
+                  {ticket.assignee.initials}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </a>
+
+      <TicketAIPanel ticket={ticket} open={aiOpen} onClose={() => setAiOpen(false)} />
+    </>
   );
 };

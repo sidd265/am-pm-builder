@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, MessageSquare, Puzzle, Users, Settings, ChevronLeft, ChevronRight, ChevronDown, Eye, Target, AlertCircle, Calendar, GitPullRequest, FileText, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, Puzzle, Users, Settings, ChevronLeft, ChevronRight, ChevronDown, Eye, Target, AlertCircle, Calendar, GitPullRequest, FileText, ClipboardList, GitBranch } from 'lucide-react';
 import { useDashboardStats, useCurrentUser } from '@/hooks/useDashboardData';
 import { useTeamMembers } from '@/hooks/useTeamData';
 import { SidebarStatsSkeleton } from '@/components/skeletons/PageSkeletons';
@@ -11,6 +11,7 @@ const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/pull-requests', icon: GitPullRequest, label: 'Pull Requests' },
   { to: '/tickets', icon: ClipboardList, label: 'Tickets' },
+  { to: '/tickets/repo-explorer', icon: GitBranch, label: 'Repo Explorer' },
   { to: '/chat', icon: MessageSquare, label: 'Chat Assistant' },
   { to: '/team', icon: Users, label: 'Team' },
   { to: '/integrations', icon: Puzzle, label: 'Integrations' },
@@ -56,7 +57,9 @@ export const Sidebar = () => {
 
       <nav className="py-2 px-3">
         {navItems.map(item => {
-          const isActive = location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to));
+          const isActive = item.to === '/tickets'
+            ? location.pathname === '/tickets'
+            : location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to));
           return (
             <NavLink
               key={item.to}
