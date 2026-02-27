@@ -13,6 +13,7 @@ import Team from "@/pages/Team";
 import Settings from "@/pages/Settings";
 import PullRequests from "@/pages/PullRequests";
 import Tickets from "@/pages/Tickets";
+import RepoExplorer from "@/pages/RepoExplorer";
 import Landing from "@/pages/Landing";
 import About from "@/pages/About";
 import Login from "@/pages/Login";
@@ -40,6 +41,7 @@ const App = () => (
                 <Route path="/integrations" element={<Integrations />} />
                 <Route path="/pull-requests" element={<PullRequests />} />
                 <Route path="/tickets" element={<Tickets />} />
+                <Route path="/tickets/repo-explorer" element={<RepoExplorer />} />
                 <Route path="/team" element={<Team />} />
                 <Route path="/settings" element={<Settings />} />
               </Route>
